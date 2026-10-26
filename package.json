@@ -1,0 +1,15 @@
+{
+  "name": "alkannani-audio",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.12"
+  },
+  "scripts": {
+    "manifest": "node scripts/generate-manifest.mjs",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "music-metadata": "11.16.1"
+  }
+}

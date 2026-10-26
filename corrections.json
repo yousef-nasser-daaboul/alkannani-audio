@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "countries": {
+    "SY": {
+      "method": "MuslimWorldLeague",
+      "madhab": "shafi",
+      "offsetsMinutes": {
+        "asr": 2,
+        "maghrib": 2
+      },
+      "cities": {}
+    }
+  }
+}

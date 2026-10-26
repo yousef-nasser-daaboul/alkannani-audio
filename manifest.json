@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "version": "v1.0.0",
+  "adhans": [
+    {
+      "id": "adhan/bilal-abdulaziz/fajr",
+      "kind": "fajr",
+      "muezzin": {
+        "id": "bilal-abdulaziz",
+        "name": "الأستاذ بلال عبد العزيز"
+      },
+      "maqam": null,
+      "displayName": "الأستاذ بلال عبد العزيز",
+      "url": "https://cdn.jsdelivr.net/gh/yousef-nasser-daaboul/alkannani-audio@v1.0.0/audio/adhan/bilal-abdulaziz/fajr.mp3",
+      "sizeBytes": 1825522,
+      "durationMs": 284526
+    },
+    {
+      "id": "adhan/bilal-abdulaziz/regular-jiharkah",
+      "kind": "regular",
+      "muezzin": {
+        "id": "bilal-abdulaziz",
+        "name": "الأستاذ بلال عبد العزيز"
+      },
+      "maqam": {
+        "id": "jiharkah",
+        "name": "جهركاه"
+      },
+      "displayName": "الأستاذ بلال عبد العزيز",
+      "url": "https://cdn.jsdelivr.net/gh/yousef-nasser-daaboul/alkannani-audio@v1.0.0/audio/adhan/bilal-abdulaziz/regular-jiharkah.mp3",
+      "sizeBytes": 1989715,
+      "durationMs": 313757
+    }
+  ],
+  "reminders": [
+    {
+      "id": "reminders/bilal-abdulaziz/tazkeer",
+      "muezzin": {
+        "id": "bilal-abdulaziz",
+        "name": "الأستاذ بلال عبد العزيز"
+      },
+      "displayName": "تذكير الأستاذ بلال عبد العزيز",
+      "url": "https://cdn.jsdelivr.net/gh/yousef-nasser-daaboul/alkannani-audio@v1.0.0/audio/reminders/bilal-abdulaziz/tazkeer.mp3",
+      "sizeBytes": 5620114,
+      "durationMs": 787540
+    }
+  ]
+}

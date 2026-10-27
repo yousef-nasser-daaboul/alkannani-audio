@@ -1,8 +1,17 @@
 {
   "muezzins": {
-    "bilal-abdulaziz": { "name": "الأستاذ بلال عبد العزيز" }
+    "bilal-abdulaziz": { "name": "الأستاذ بلال عبد العزيز" },
+    "marrashli": { "name": "المرعشلي" },
+    "saad": { "name": "سعد" }
   },
   "maqamat": {
-    "jiharkah": { "name": "جهركاه" }
+    "jiharkah": { "name": "جهركاه" },
+    "rasd": { "name": "رصد" }
+  },
+  "reminders": {
+    "bilal-abdulaziz/tazkeer": { "prayer": "isha" },
+    "marrashli/fajr-1": { "prayer": "fajr", "name": "تذكير المرعشلي 1" },
+    "marrashli/fajr-2": { "prayer": "fajr", "name": "تذكير المرعشلي 2" },
+    "marrashli/isha": { "prayer": "isha" }
   }
 }

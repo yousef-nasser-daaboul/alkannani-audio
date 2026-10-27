@@ -6,6 +6,7 @@ const BILAL = "الأستاذ بلال عبد العزيز";
 const catalog = {
   muezzins: { "bilal-abdulaziz": { name: BILAL } },
   maqamat: { jiharkah: { name: "جهركاه" } },
+  reminders: { "bilal-abdulaziz/tazkeer": { prayer: "isha" } },
 };
 
 /** Compares as JSON text so key order is part of the assertion. */
@@ -60,7 +61,7 @@ test("a maqam suffix on a regular adhan resolves to the catalog maqam", () => {
   ]);
 });
 
-test("a reminder becomes a reminder entry named تذكير + muezzin name", () => {
+test("a reminder becomes a reminder entry for its catalog prayer, named تذكير + muezzin name", () => {
   const manifest = buildManifest({
     version: "v1.0.0",
     catalog,
@@ -71,6 +72,7 @@ test("a reminder becomes a reminder entry named تذكير + muezzin name", () =
   assertSameJson(manifest.reminders, [
     {
       id: "reminders/bilal-abdulaziz/tazkeer",
+      prayer: "isha",
       muezzin: { id: "bilal-abdulaziz", name: BILAL },
       displayName: "تذكير الأستاذ بلال عبد العزيز",
       url: "https://cdn.jsdelivr.net/gh/yousef-nasser-daaboul/alkannani-audio@v1.0.0/audio/reminders/bilal-abdulaziz/tazkeer.mp3",
@@ -80,10 +82,48 @@ test("a reminder becomes a reminder entry named تذكير + muezzin name", () =
   ]);
 });
 
+test("a catalog name replaces a reminder's display name", () => {
+  const manifest = buildManifest({
+    version: "v1.1.0",
+    catalog: {
+      ...catalog,
+      reminders: { "bilal-abdulaziz/fajr-2": { prayer: "fajr", name: "تذكير بلال 2" } },
+    },
+    files: [{ path: "audio/reminders/bilal-abdulaziz/fajr-2.mp3", sizeBytes: 1, durationMs: 1 }],
+  });
+
+  assert.equal(manifest.reminders[0].prayer, "fajr");
+  assert.equal(manifest.reminders[0].displayName, "تذكير بلال 2");
+});
+
+test("a reminder missing from catalog.json fails naming the file and the entry to add", () => {
+  const message = errorFor(["audio/reminders/bilal-abdulaziz/fajr.mp3"]);
+  assert.match(message, /audio\/reminders\/bilal-abdulaziz\/fajr\.mp3/);
+  assert.ok(
+    message.includes(`"reminders": { "bilal-abdulaziz/fajr": { "prayer": "fajr" | "isha" } }`),
+    `message should say what to add to catalog.json:\n${message}`,
+  );
+});
+
+for (const [why, info, expected] of [
+  ["a prayer other than fajr or isha", { prayer: "dhuhr" }, /"prayer" must be "fajr" or "isha"/],
+  ["no prayer", {}, /"prayer" must be "fajr" or "isha"/],
+  ["an empty name", { prayer: "fajr", name: "" }, /"name" must be a non-empty string/],
+]) {
+  test(`a reminder with ${why} in catalog.json fails`, () => {
+    const message = errorFor(["audio/reminders/bilal-abdulaziz/tazkeer.mp3"], {
+      catalog: { ...catalog, reminders: { "bilal-abdulaziz/tazkeer": info } },
+    });
+    assert.match(message, /audio\/reminders\/bilal-abdulaziz\/tazkeer\.mp3/);
+    assert.match(message, expected);
+  });
+}
+
 test("adhans and reminders are sorted by id regardless of input order", () => {
   const twoMuezzins = {
     muezzins: { ...catalog.muezzins, "ahmad-2": { name: "أحمد" } },
     maqamat: { ...catalog.maqamat, "hijaz-kar": { name: "حجاز كار" } },
+    reminders: { ...catalog.reminders, "ahmad-2/tazkeer": { prayer: "fajr" } },
   };
   const f = (path) => ({ path, sizeBytes: 1, durationMs: 1 });
   const manifest = buildManifest({

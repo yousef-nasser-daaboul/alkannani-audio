@@ -12,6 +12,7 @@ const REAL_FAJR = path.join(repoRoot, "audio/adhan/bilal-abdulaziz/fajr.mp3");
 const catalog = {
   muezzins: { "bilal-abdulaziz": { name: "الأستاذ بلال عبد العزيز" } },
   maqamat: { jiharkah: { name: "جهركاه" } },
+  reminders: { "bilal-abdulaziz/tazkeer": { prayer: "isha" } },
 };
 
 /**
@@ -34,11 +35,19 @@ test("reads exact size and full-frame duration of the real audio files", async (
   files.sort((a, b) => (a.path < b.path ? -1 : 1));
 
   // Sizes from the filesystem; durations from counting MPEG frames by hand
-  // (10892 / 12011 / 30148 frames x 1152 samples at 44.1 kHz).
+  // for the v1.0.0 three (10892 / 12011 / 30148 frames x 1152 samples at 44.1 kHz); the v1.1.0
+  // ones as first read, to catch a file changed after publishing.
   assert.deepEqual(files, [
     { path: "audio/adhan/bilal-abdulaziz/fajr.mp3", sizeBytes: 1825522, durationMs: 284526 },
     { path: "audio/adhan/bilal-abdulaziz/regular-jiharkah.mp3", sizeBytes: 1989715, durationMs: 313757 },
+    { path: "audio/adhan/bilal-abdulaziz/regular-rasd.mp3", sizeBytes: 2182516, durationMs: 296411 },
+    { path: "audio/adhan/marrashli/fajr.mp3", sizeBytes: 2071007, durationMs: 246544 },
+    { path: "audio/adhan/marrashli/regular.mp3", sizeBytes: 2028011, durationMs: 246152 },
+    { path: "audio/adhan/saad/regular.mp3", sizeBytes: 2631437, durationMs: 353646 },
     { path: "audio/reminders/bilal-abdulaziz/tazkeer.mp3", sizeBytes: 5620114, durationMs: 787540 },
+    { path: "audio/reminders/marrashli/fajr-1.mp3", sizeBytes: 8598718, durationMs: 1042416 },
+    { path: "audio/reminders/marrashli/fajr-2.mp3", sizeBytes: 11567335, durationMs: 1539187 },
+    { path: "audio/reminders/marrashli/isha.mp3", sizeBytes: 11566041, durationMs: 1344026 },
   ]);
 });
 

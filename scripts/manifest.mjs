@@ -3,6 +3,8 @@ export const VERSION = /^v\d+\.\d+\.\d+$/;
 /** The tag's major version: the app reads the `@<SCHEMA_VERSION>` range, i.e. the newest v1.x.y. */
 export const SCHEMA_VERSION = 1;
 const ADHAN_KINDS = ["regular", "fajr"];
+/** The prayers a reminder comes before (the app offers each reminder for its prayer only). */
+const REMINDER_PRAYERS = ["fajr", "isha"];
 const ID = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const LAYOUT =
   "paths must be audio/adhan/<muezzin-id>/<regular|fajr>[-<maqam-id>].mp3 " +
@@ -10,7 +12,12 @@ const LAYOUT =
 
 /**
  * @typedef {{ path: string, sizeBytes: number, durationMs: number }} AudioFile
- * @typedef {{ muezzins: Record<string, { name: string }>, maqamat: Record<string, { name: string }> }} Catalog
+ * @typedef {{ prayer: string, name?: string }} ReminderInfo
+ * @typedef {{
+ *   muezzins: Record<string, { name: string }>,
+ *   maqamat: Record<string, { name: string }>,
+ *   reminders?: Record<string, ReminderInfo>,
+ * }} Catalog
  */
 
 /**
@@ -59,12 +66,14 @@ export function buildManifest({ files, catalog, version }) {
     const muezzinName = lookup(catalog, "muezzins", muezzinId, fail);
 
     if (category === "reminders") {
-      if (muezzinName === undefined) continue;
+      const info = reminderInfo(catalog, `${muezzinId}/${stem}`, fail);
+      if (muezzinName === undefined || info === undefined) continue;
       const muezzin = { id: muezzinId, name: muezzinName };
       reminders.push({
         id,
+        prayer: info.prayer,
         muezzin,
-        displayName: `تذكير ${muezzin.name}`,
+        displayName: info.name ?? `تذكير ${muezzin.name}`,
         url,
         sizeBytes: file.sizeBytes,
         durationMs: file.durationMs,
@@ -130,4 +139,36 @@ function lookup(catalog, section, id, fail) {
       `Add to catalog.json: "${section}": { "${id}": { "name": "<display name>" } }`,
   );
   return undefined;
+}
+
+/**
+ * Returns catalog.reminders["<muezzin-id>/<name>"]: the prayer the reminder comes before, and
+ * optionally a display name (two reminders by one muezzin need different names). Every reminder
+ * must be listed, as nothing in its file says which prayer it is for. Otherwise reports what to add
+ * and returns undefined.
+ *
+ * @param {Catalog} catalog
+ * @param {string} key
+ * @param {(message: string) => void} fail
+ * @returns {ReminderInfo | undefined}
+ */
+function reminderInfo(catalog, key, fail) {
+  const entries = catalog.reminders ?? {};
+  const info = Object.hasOwn(entries, key) ? entries[key] : undefined;
+  if (info === undefined) {
+    fail(
+      `reminder "${key}" is not in catalog.json. ` +
+        `Add to catalog.json: "reminders": { "${key}": { "prayer": "fajr" | "isha" } }`,
+    );
+    return undefined;
+  }
+  if (!REMINDER_PRAYERS.includes(info?.prayer)) {
+    fail(`reminder "${key}" in catalog.json: "prayer" must be "fajr" or "isha" (got ${JSON.stringify(info?.prayer)})`);
+    return undefined;
+  }
+  if (info.name !== undefined && (typeof info.name !== "string" || info.name === "")) {
+    fail(`reminder "${key}" in catalog.json: "name" must be a non-empty string when given`);
+    return undefined;
+  }
+  return info.name === undefined ? { prayer: info.prayer } : { prayer: info.prayer, name: info.name };
 }

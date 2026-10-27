@@ -8,8 +8,8 @@
 
 ```
 audio/adhan/<muezzin-id>/<kind>[-<maqam-id>].mp3   kind = regular | fajr ; maqam optional (absent = غير محدد)
-audio/reminders/<muezzin-id>/<name>.mp3
-catalog.json      أسماء المؤذنين والمقامات المعروضة (يُحرَّر يدوياً)
+audio/reminders/<muezzin-id>/<name>.mp3                listed in catalog.json "reminders" with its prayer
+catalog.json      أسماء المؤذنين والمقامات المعروضة، وصلاة كل تذكير (يُحرَّر يدوياً)
 manifest.json     مولَّد — لا يُحرَّر يدوياً
 corrections.json  تصحيحات الأوقات
 scripts/generate-manifest.mjs
@@ -20,21 +20,33 @@ scripts/generate-manifest.mjs
 | المسار | الوصف |
 | --- | --- |
 | `audio/adhan/bilal-abdulaziz/regular-jiharkah.mp3` | أذان عادي، مقام جهركاه |
+| `audio/adhan/bilal-abdulaziz/regular-rasd.mp3` | أذان عادي، مقام رصد (v1.1.0) |
 | `audio/adhan/bilal-abdulaziz/fajr.mp3` | أذان فجر، مقام غير محدد |
-| `audio/reminders/bilal-abdulaziz/tazkeer.mp3` | تذكير |
+| `audio/adhan/marrashli/regular.mp3` | أذان عادي، مقام غير محدد (v1.1.0) |
+| `audio/adhan/marrashli/fajr.mp3` | أذان فجر، مقام غير محدد (v1.1.0) |
+| `audio/adhan/saad/regular.mp3` | أذان عادي، مقام غير محدد (v1.1.0) |
+| `audio/reminders/bilal-abdulaziz/tazkeer.mp3` | تذكير العشاء |
+| `audio/reminders/marrashli/fajr-1.mp3` | تذكير الفجر «تذكير المرعشلي 1» (v1.1.0) |
+| `audio/reminders/marrashli/fajr-2.mp3` | تذكير الفجر «تذكير المرعشلي 2» (v1.1.0) |
+| `audio/reminders/marrashli/isha.mp3` | تذكير العشاء (v1.1.0) |
 
-كل الملفات MP3 أحادية (mono)، ‏44.1kHz، بمعدّل 51–57kbps. ارفع الملفات الجديدة مضغوطةً بالمثل، فالسكربت لا يعيد الترميز أبداً.
+كل الملفات MP3 أحادية (mono)، ‏44.1kHz، بمعدّل 51–69kbps. ارفع الملفات الجديدة مضغوطةً بالمثل، فالسكربت لا يعيد الترميز أبداً.
 
 ## `catalog.json`
 
 ```json
 {
   "muezzins": { "<id>": { "name": "..." } },
-  "maqamat":  { "<id>": { "name": "..." } }
+  "maqamat":  { "<id>": { "name": "..." } },
+  "reminders": { "<muezzin-id>/<name>": { "prayer": "fajr" | "isha", "name": "..." } }
 }
 ```
 
 المعرّفات بحروف صغيرة مفصولة بشرطات (kebab): `[a-z0-9-]+`، وهي نفسها أسماء المجلدات والمقاطع في مسارات الصوت.
+
+كل ملف تذكير يجب أن يُذكر في `reminders` بمفتاح `<muezzin-id>/<name>` (مساره بدون `audio/reminders/` و`.mp3`):
+- `prayer` (إلزامي): الصلاة التي يسبقها التذكير، `fajr` أو `isha`. يعرض التطبيق لكل صلاة تذكيراتها فقط.
+- `name` (اختياري): الاسم المعروض، حين يكون للمؤذن أكثر من تذكير للصلاة نفسها (مثل «تذكير المرعشلي 1»). الافتراضي `"تذكير " + اسم المؤذن`.
 
 ## `manifest.json` (مولَّد)
 
@@ -57,7 +69,9 @@ scripts/generate-manifest.mjs
 | `sizeBytes` | الحجم بالبايت |
 | `durationMs` | المدة بالميلي ثانية |
 
-عنصر التذكير: `id`، `muezzin`، `displayName` (`"تذكير " + muezzin.name`)، `url`، `sizeBytes`، `durationMs`.
+عنصر التذكير: `id`، `prayer` (`fajr` أو `isha`، من `catalog.json`، منذ v1.1.0)، `muezzin`، `displayName` (`name` من `catalog.json`، وإلا `"تذكير " + muezzin.name`)، `url`، `sizeBytes`، `durationMs`.
+
+إضافة `prayer` في v1.1.0 متوافقة مع المخطط `1`: نسخ التطبيق الأقدم تتجاهل الحقل وتعرض كل التذكيرات للصلاتين.
 
 يعرض التطبيق الأذان بصيغة `<المؤذن> – <المقام>` حين لا يكون `maqam` يساوي `null`، وإلا يكتفي باسم المؤذن.
 
@@ -128,7 +142,7 @@ https://cdn.jsdelivr.net/gh/yousef-nasser-daaboul/alkannani-audio@1/corrections.
 ## إضافة مؤذن جديد
 
 1. ضع ملف MP3 في المسار الصحيح، مثل `audio/adhan/<muezzin-id>/regular-<maqam-id>.mp3` أو `audio/adhan/<muezzin-id>/fajr.mp3` أو `audio/reminders/<muezzin-id>/<name>.mp3`.
-2. إن كان المؤذن أو المقام جديداً، أضِفه إلى `catalog.json`.
+2. إن كان المؤذن أو المقام جديداً، أضِفه إلى `catalog.json`. ولكل تذكير جديد أضِف عنصره في `reminders` مع صلاته.
 3. ولّد الـ manifest بالوسم التالي (semver ضمن `v1`: صوت جديد = رفع minor، تصحيح أوقات = رفع patch):
    ```bash
    npm install            # first time only
@@ -149,7 +163,7 @@ https://cdn.jsdelivr.net/gh/yousef-nasser-daaboul/alkannani-audio@1/corrections.
    curl -s https://cdn.jsdelivr.net/gh/yousef-nasser-daaboul/alkannani-audio@1/manifest.json | grep '"version"'   # must print vX.Y.Z
    ```
 
-يفشل السكربت بوضوح (قبل كتابة أي شيء) إذا وجد مؤذناً أو مقاماً غير موجود في `catalog.json` أو ملفاً مسمّى بشكل خاطئ.
+يفشل السكربت بوضوح (قبل كتابة أي شيء) إذا وجد مؤذناً أو مقاماً أو تذكيراً غير موجود في `catalog.json` أو ملفاً مسمّى بشكل خاطئ.
 
 ## تعديل التصحيحات
 
